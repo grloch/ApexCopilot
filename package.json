@@ -38,32 +38,43 @@
       "@oclif/plugin-help",
       "@oclif/plugin-plugins"
     ],
+    "theme": ".oclif-theme.json",
     "topicSeparator": " ",
     "topics": {
-      "hello": {
-        "description": "Say hello to the world and others"
+      "global": {
+        "description": "PKG JSON TOPIC DESC"
+      },
+      "project": {
+        "description": "PKG JSON TOPIC DESC"
       }
     }
   },
   "dependencies": {
+    "@inquirer/input": "^2.1.1",
     "@oclif/core": "^3",
     "@oclif/plugin-help": "^6",
-    "@oclif/plugin-plugins": "^4"
+    "@oclif/plugin-plugins": "^4",
+    "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "@oclif/prettier-config": "^0.2.1",
     "@oclif/test": "^3",
     "@types/chai": "^4",
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.7",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18",
+    "@types/strip-color": "^0.1.2",
     "chai": "^4",
     "eslint": "^8.57.0",
     "eslint-config-oclif": "^5",
     "eslint-config-oclif-typescript": "^3",
     "eslint-config-prettier": "^9.1.0",
+    "fs-extra": "^11.2.0",
     "mocha": "^10",
     "oclif": "^4",
     "shx": "^0.3.3",
+    "strip-color": "^0.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5"
   },

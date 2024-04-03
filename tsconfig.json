@@ -5,7 +5,25 @@
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
-    "target": "es2022"
+    "target": "es2022",
+    "allowJs": true,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "lib": [
+      "es6"
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./interfaces.d.ts"
+    ]
   },
-  "include": ["src/**/*"]
+  "include": [
+    "./types/**/*.ts",
+    "src/**/*",
+    "..ignore/inquirer",
+    "interfaces.d.ts"
+  ]
 }
