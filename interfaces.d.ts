@@ -22,3 +22,17 @@ export namespace NumbersTypes {
 
   export type IntRange<F extends number, T extends number> = Exclude<EnumNumberRange<T>, EnumNumberRange<F>>
 }
+
+export namespace Logger {
+  type ErrorType = 'ERROR' | 'EXCEPTION'
+
+  type LogType = 'INFO' | 'LOG' | 'METHOD_RETURN' | 'PROCESS_END' | 'PROCESS_START' | 'WARNING' | ErrorType
+
+  type LogOptions = {
+    context?: string
+    message: string
+    prompt?: boolean
+    throwError?: boolean
+    type?: LogType
+  }
+}

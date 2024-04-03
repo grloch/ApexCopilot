@@ -3,25 +3,21 @@ import Fs from 'fs-extra'
 import Path from 'node:path'
 import stripColor from 'strip-color'
 
+import {Logger} from '../../interfaces'
 import {cliLogs} from './paths'
 import * as utils from './utils'
 
-type ErrorType = 'ERROR' | 'EXCEPTION'
+// type ErrorType = 'ERROR' | 'EXCEPTION'
 
-type LogType = 'INFO' | 'LOG' | 'METHOD_RETURN' | 'PROCESS_END' | 'PROCESS_START' | 'WARNING' | ErrorType
+// type LogType = 'INFO' | 'LOG' | 'METHOD_RETURN' | 'PROCESS_END' | 'PROCESS_START' | 'WARNING' | ErrorType
 
-type LogOptions = {
-  context?: string
-  message: string
-  prompt?: boolean
-  throwError?: boolean
-  type?: LogType
-}
-
-type LogContextOptions = {
-  message: string
-  prompt?: boolean
-}
+// type LogOptions = {
+//   context?: string
+//   message: string
+//   prompt?: boolean
+//   throwError?: boolean
+//   type?: LogType
+// }
 
 const IS_DEBUGGIN = true
 const FILE_HEADER = (IS_DEBUGGIN ? `IS_DEBUGGIN ${utils.getTimeStamp()}\n` : '') + `TIMESTAMP     | DAY        | TIME     | CONTEXT | TYPE | VALUE`
@@ -53,7 +49,7 @@ export class LogController {
     return new LoggerContext(this, contextName)
   }
 
-  public error(message: string, type: ErrorType = 'ERROR') {
+  public error(message: string, type: Logger.ErrorType = 'ERROR') {
     const terminalStart = ux.colorize(this._commandContext?.config.theme?.error, 'ERROR:')
 
     const throwError = type === 'EXCEPTION'
@@ -61,7 +57,7 @@ export class LogController {
     this.log({message, prompt: true, terminalStart, throwError, type})
   }
 
-  public log(options: LogOptions & {terminalStart?: string; type: LogType}) {
+  public log(options: Logger.LogOptions & {terminalStart?: string; type: Logger.LogType}) {
     let {context} = options
 
     const {message, prompt, terminalStart, throwError} = options
@@ -129,7 +125,7 @@ export class LogController {
     }
   }
 
-  public warn(options: LogOptions & {throwError?: boolean}, textStart: string = 'WARNING:') {
+  public warn(options: Logger.LogOptions & {throwError?: boolean}, textStart: string = 'WARNING:') {
     this.log({...options, terminalStart: ux.colorize(this._commandContext?.config.theme?.warning, textStart + ':'), type: 'WARNING'})
   }
 
@@ -160,7 +156,7 @@ export class LoggerContext {
     this.logger.log({context: this.context, message: '', prompt: false, type: 'PROCESS_START'})
   }
 
-  public error(message: string, type: ErrorType = 'ERROR') {
+  public error(message: string, type: Logger.ErrorType = 'ERROR') {
     this.checkContextEnded()
 
     this.logger.log({context: this.context, message, prompt: true, throwError: type === 'EXCEPTION', type})
