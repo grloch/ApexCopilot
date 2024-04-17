@@ -18,3 +18,4 @@ node_modules
 oclif.lock
 oclif.manifest.json
 sf-test-project/*
+test.cmd
