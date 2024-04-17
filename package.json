@@ -51,9 +51,12 @@
   },
   "dependencies": {
     "@inquirer/input": "^2.1.1",
+    "@inquirer/prompts": "^4.3.1",
     "@oclif/core": "^3",
     "@oclif/plugin-help": "^6",
     "@oclif/plugin-plugins": "^4",
+    "chalk": "^5.3.0",
+    "colors-cli": "^1.0.33",
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
@@ -70,6 +73,7 @@
     "eslint-config-oclif": "^5",
     "eslint-config-oclif-typescript": "^3",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-node": "^11.1.0",
     "fs-extra": "^11.2.0",
     "mocha": "^10",
     "oclif": "^4",
