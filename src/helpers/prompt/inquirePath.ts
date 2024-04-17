@@ -1,5 +1,4 @@
-import inquirerInput from '@inquirer/input'
-// import Fs from 'fs-extra'
+import * as inquirer from '@inquirer/prompts'
 
 import {NumbersTypes} from '../../../interfaces'
 import defaultLogger from '../logger'
@@ -13,7 +12,7 @@ type InquirePathOptions = {
 }
 
 export default async function inquirePath(options: InquirePathOptions) {
-  const logger = defaultLogger.buildLogContext('./src/helpers/prompt/inquirePath')
+  const logger = defaultLogger.buildLogContext('helpers/prompt/inquirePath', 'inquirePath')
 
   options.maximumTrys = options.maximumTrys ?? 5
   let avaliableTrys = options.maximumTrys
@@ -27,7 +26,7 @@ export default async function inquirePath(options: InquirePathOptions) {
 
     avaliableTrys--
 
-    inquireResponse = await inquirerInput({...options})
+    inquireResponse = await inquirer.input({...options})
 
     if (!inquireResponse) {
       logger.error(`Invalid response, inform a valid dir path: (${inquireResponse})`, 'ERROR')
