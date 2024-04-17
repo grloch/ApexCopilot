@@ -5,6 +5,7 @@
   "dollarSign": "pink",
   "error": "red",
   "flag": "white",
+  "title": "bgWhiteBright",
   "flagDefaultValue": "blue",
   "flagOptions": "white",
   "flagRequired": "red",
