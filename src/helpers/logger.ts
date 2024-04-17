@@ -7,26 +7,14 @@ import {Logger} from '../../interfaces'
 import {cliLogs} from './paths'
 import * as utils from './utils'
 
-// type ErrorType = 'ERROR' | 'EXCEPTION'
-
-// type LogType = 'INFO' | 'LOG' | 'METHOD_RETURN' | 'PROCESS_END' | 'PROCESS_START' | 'WARNING' | ErrorType
-
-// type LogOptions = {
-//   context?: string
-//   message: string
-//   prompt?: boolean
-//   throwError?: boolean
-//   type?: LogType
-// }
-
-const IS_DEBUGGIN = true
+const IS_DEBUGGIN = false
 const FILE_HEADER = (IS_DEBUGGIN ? `IS_DEBUGGIN ${utils.getTimeStamp()}\n` : '') + `TIMESTAMP     | DAY        | TIME     | CONTEXT | TYPE | VALUE`
 
 export class LogController {
   private _commandContext: Command | undefined
   private _filename: string = ''
 
-  private allowBucket = true
+  private allowSave: boolean | undefined = undefined
   private context: string = 'main'
   private dirPath: string
   private fileCreated = false
@@ -45,8 +33,25 @@ export class LogController {
     return Path.join(this.dirPath, this._filename)
   }
 
-  public buildLogContext(contextName: string) {
-    return new LoggerContext(this, contextName)
+  public buildLogContext(filePath: string, functionName: string) {
+    return new LoggerContext(this, filePath, functionName)
+  }
+
+  public deleteFile() {
+    this.allowSave = false
+
+    if (this.fileCreated && Fs.existsSync(this.path)) {
+      try {
+        Fs.unlinkSync(this.path)
+        this.log({
+          message: `${this.path} deleted!\n`,
+          prompt: true,
+          type: 'INFO',
+        })
+      } catch (error) {
+        this.error('Cant`t delete log at ' + this.path + '\n' + error)
+      }
+    }
   }
 
   public error(message: string, type: Logger.ErrorType = 'ERROR') {
@@ -68,7 +73,7 @@ export class LogController {
 
       if (messageItem.length === 0) continue
 
-      if (prompt) console.log(`${terminalStart ? terminalStart + ` ` : ''}${messageItem}`)
+      if (prompt || IS_DEBUGGIN) console.log(!prompt && IS_DEBUGGIN ? `[[DEBUGGIN]] ` : '', `${terminalStart ? terminalStart + ` ` : ''}${messageItem}`)
 
       const messageEntrys: string[] = utils.getTimeStamp().split(' ')
       messageEntrys.push(context, options.type, stripColor(messageItem))
@@ -102,7 +107,19 @@ export class LogController {
     })
   }
 
-  public setFilename(filename: string) {
+  public setAllowSave(allowSave: boolean | undefined) {
+    if (allowSave === true || allowSave === false) {
+      if (this.allowSave === undefined) {
+        this.allowSave = allowSave
+      } else {
+        this.error('Log saving config alread setted', 'ERROR')
+      }
+    } else {
+      this.error('Inform a valid value')
+    }
+  }
+
+  public setFilename(filename: string, allowSave?: boolean) {
     if (this._filename?.length > 0) {
       this.error(`LogController.setFilename: log file name already defined (${this._filename})`)
     } else if (!filename || filename.length <= 0) {
@@ -113,10 +130,12 @@ export class LogController {
 
       this._filename = IS_DEBUGGIN ? `${filename}.log` : `${timestamp}_${filename}.log`
     }
+
+    if (allowSave !== undefined) this.setAllowSave(allowSave)
   }
 
   public setOclifContext(oclif: Command) {
-    if (this._commandContext !== null) {
+    if (this._commandContext !== undefined) {
       this.error(`LogController.setOclifContext: oclif context already defined (${this._commandContext})`)
     } else if (oclif === null) {
       this.error(`LogController.setFileName: oclif context not informed`)
@@ -130,6 +149,8 @@ export class LogController {
   }
 
   private appendLine(lineText: string) {
+    if (this.allowSave !== true) return
+
     if (this._filename) {
       if (!Fs.existsSync(this.dirPath)) Fs.mkdirSync(this.dirPath, {recursive: true})
       if (!Fs.existsSync(this.path) || (IS_DEBUGGIN && !this.fileCreated)) {
@@ -149,9 +170,9 @@ export class LoggerContext {
   private context: string
   private logger: LogController
 
-  constructor(mainLogger: LogController, context: string) {
+  constructor(mainLogger: LogController, filePath: string, functionName: string) {
     this.logger = mainLogger
-    this.context = context
+    this.context = `${filePath} ${functionName}`
 
     this.logger.log({context: this.context, message: '', prompt: false, type: 'PROCESS_START'})
   }
@@ -162,7 +183,10 @@ export class LoggerContext {
     this.logger.log({context: this.context, message, prompt: true, throwError: type === 'EXCEPTION', type})
   }
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
+  public log(message: string, prompt: boolean, type: Logger.LogType) {
+    this.logger.log({context: this.context, message, prompt, throwError: type === 'EXCEPTION', type})
+  }
+
   public methodResponse(methodResponse: any, finishContext: boolean, label?: string) {
     this.checkContextEnded()
 
