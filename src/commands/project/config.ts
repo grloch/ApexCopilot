@@ -63,10 +63,10 @@ export default class projectConfig extends Command {
       !flags.force && printTitle('Confirm overwrite')
 
       blockOverwrite = flags.force || (await prompt.input.confirm(`${cliDefaultConfigs.CONFIG_FILE_NAME} already exists, overwrite it?`))
-    }
 
-    if (!blockOverwrite) {
-      return logger.log({message: 'Operation cancelled by user', prompt: true, type: 'INFO'})
+      if (!blockOverwrite) {
+        return logger.log({message: 'Operation cancelled by user', prompt: true, type: 'INFO'})
+      }
     }
 
     if (!flags['ignore-missing-paths']) {
