@@ -2,7 +2,7 @@ import * as input from './input';
 import inquirePath from './inquirePath';
 import selectFiles from './select-files';
 
-const exportObject: any = {
+const exportObject = {
 	files: {
 		selectFiles,
 	},
