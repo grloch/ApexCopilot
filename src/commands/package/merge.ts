@@ -1,95 +1,152 @@
-import {Args, Command, Flags} from '@oclif/core'
-import fs from 'fs-extra'
-import path from 'node:path'
-import {table} from 'table'
+import { Command, Flags } from '@oclif/core';
+import fs from 'node:fs';
+import path from 'node:path';
+import { table } from 'table';
 
-import * as cliDefaultConfigs from '../../helpers/cli-config'
-import logger from '../../helpers/logger'
-import {PackageController} from '../../helpers/package'
-import prompt from '../../helpers/prompt'
+import { ProjectConfigOptions } from '../../../interfaces';
+import * as cliDefaultConfigs from '../../helpers/cli-config';
+import logger from '../../helpers/logger';
+import { PackageController } from '../../helpers/package';
+import prompt from '../../helpers/prompt';
+
+type MergeScopeFlags = {
+	files?: string[];
+	force?: boolean;
+	keepLog?: boolean;
+	output?: string;
+};
+
+const DEFAULT_OUTPUT_NAME = 'mergedPackage';
 
 export default class Merge extends Command {
-  static override args = {
-    file: Args.string({description: 'file to read'}),
-  }
+	static override description = 'describe the command here';
 
-  static override description = 'describe the command here'
+	static override examples = ['<%= config.bin %> <%= command.id %>'];
 
-  static override examples = ['<%= config.bin %> <%= command.id %>']
+	static override flags = {
+		files: Flags.string({ char: 'f', description: 'name to print', multiple: true }),
+		force: Flags.boolean({ default: false }),
+		keepLog: Flags.boolean({ aliases: ['keep-log'], allowNo: false, description: '' }),
+		output: Flags.string({ char: 'o', default: DEFAULT_OUTPUT_NAME }),
+	};
 
-  static override flags = {
-    files: Flags.string({char: 'f', description: 'name to print', multiple: true}),
-    force: Flags.boolean({default: false}),
-    output: Flags.string({char: 'o', default: 'mergedPackage.xml'}),
-  }
+	private finalPackage = new PackageController();
+	private projectConfig: ProjectConfigOptions.ProjectConfing = cliDefaultConfigs.getConfig();
+	private scopeFlags: MergeScopeFlags = {};
 
-  private projectNewConfig = cliDefaultConfigs.blankConfig
+	public async run(): Promise<void> {
+		this.handleFlags((await this.parse(Merge)).flags);
 
-  public async run(): Promise<void> {
-    const {args, flags} = await this.parse(Merge)
+		logger.setOclifContext(this);
+		logger.setFilename('merge-package', this.projectConfig.logs?.save);
+		logger.logVariable('flags', this.scopeFlags);
 
-    const correntConfig = cliDefaultConfigs.getConfig()
+		const preventReplace = await this.handleOutputName();
+		if (!preventReplace) {
+			return logger.log({ message: 'Operation cancelled by user', prompt: true, type: 'INFO' });
+		}
 
-    logger.setOclifContext(this)
-    logger.setFilename('merge-package', correntConfig.logs?.save)
-    logger.logVariable('flags', flags)
+		await this.handleInputFiles();
 
-    if (!flags.output.endsWith('.xml')) flags.output += '.xml'
-    flags.output = path.join('manifest', flags.output)
+		if (!this.scopeFlags.output || this.scopeFlags.output.length === 0) {
+			return logger.error('Inform a output path', 'EXCEPTION');
+		}
 
-    if (fs.existsSync(flags.output)) {
-      logger.log({message: `Output path "${flags.output}" already exist`, type: 'INFO'})
+		if (!this.scopeFlags.files || this.scopeFlags.files.length === 0) {
+			return logger.error('No input file infomed', 'EXCEPTION');
+		}
 
-      const replaceFile = flags.force || (await prompt.input.confirm(`Replace file at ${flags.output}`))
+		if (this.scopeFlags.files && this.scopeFlags.files.length > 0) {
+			this.finalPackage.concatFile(this.scopeFlags.files);
+		}
 
-      if (!replaceFile) {
-        return logger.log({message: 'Operation cancelled by user', prompt: true, type: 'INFO'})
-      }
+		this.logResult();
 
-      logger.log({message: `Output path "${flags.output}" will be replaced`, type: 'INFO'})
-    }
+		const confirFileCreation = this.scopeFlags.force || (await prompt.input.confirm('Create file?'));
+		if (confirFileCreation) {
+			if (!fs.existsSync(this.projectConfig.manifest.mergedPath)) {
+				fs.mkdirSync(this.projectConfig.manifest.mergedPath, { recursive: true });
+			}
 
-    flags.files = [...new Set<string>((flags.files ?? [])?.map((i) => i.split(',')).flat())].map((i) => path.join(process.cwd(), i))
+			const outputXmlFile = this.finalPackage.buildFile();
+			console.log('this.finalPackage.hasItens', this.finalPackage.hasItens);
 
-    if (!flags.force && flags.files?.length < 2) {
-      flags.files = await prompt.path.selectManifestFiles()
-    }
+			fs.writeFileSync(this.scopeFlags.output, outputXmlFile);
+		}
 
-    const finalPackage = new PackageController()
+		if (!this.scopeFlags.keepLog) logger.deleteFile();
+	}
 
-    if (flags.files.length < 2) {
-      logger.error('Inform at least 2 xml files.', 'EXCEPTION')
-    }
+	private async handleFlags(flags: any) {
+		this.scopeFlags = flags;
 
-    for (const file of flags.files) {
-      if (fs.existsSync(file)) {
-        finalPackage.concatFile(file)
-      } else {
-        logger.error(`${file} isn't a valid path or not founded`, 'EXCEPTION')
-      }
-    }
+		this.scopeFlags.output = (this.scopeFlags.output ?? '').trim();
+		if (!this.scopeFlags.output || this.scopeFlags.output.length === 0) {
+			this.scopeFlags.output = (Merge.flags.output.default as string) ?? DEFAULT_OUTPUT_NAME;
 
-    fs.writeFileSync(flags.output, finalPackage.parseToFile())
+			logger.log({ message: `Output path not informed, using fallback ${this.scopeFlags.output}`, type: 'INFO' });
+		}
+	}
 
-    logger.log({message: `New manifest file info:`, prompt: true, type: 'INFO'})
-    logger.log({
-      message: table([
-        ['Manifest file saved at', path.join(process.cwd(), flags.output)],
-        ['Merged files', flags.files.join('\n')],
-      ]),
-      prompt: true,
-      type: 'INFO',
-    })
+	private async handleInputFiles() {
+		console.log('this.scopeFlags.force', this.scopeFlags.force);
 
-    const tableData = []
-    for (const typeName of finalPackage.members.keys()) {
-      const memberItens = [...(finalPackage.members.get(typeName) ?? [])]
+		this.scopeFlags.files = this.scopeFlags?.files ?? [];
+		if (this.scopeFlags.files.length > 0) {
+			this.scopeFlags.files = this.scopeFlags.files.flatMap((i) => i.split(','));
+			this.scopeFlags.files = this.scopeFlags.files.map((i) => path.join(process.cwd(), i));
+			this.scopeFlags.files = [...new Set<string>(this.scopeFlags.files.sort())];
+		} else if (!this.scopeFlags.force) {
+			this.scopeFlags.files = await prompt.files.selectFiles('Select a manifest file', this.projectConfig.manifest.path, {
+				filter: ['.xml'],
+				minimumSelection: 2,
+			});
+		}
 
-      tableData.push([`${typeName} (${memberItens.length})`, memberItens.join('\n')])
-    }
+		if (this.scopeFlags.files.length < 2) {
+			logger.error('Inform at least 2 xml files.', 'EXCEPTION');
+		}
+	}
 
-    logger.log({message: table(tableData), prompt: true, type: 'INFO'})
+	private async handleOutputName() {
+		let replaceFile = false;
+		this.scopeFlags.output = this.scopeFlags.output ?? DEFAULT_OUTPUT_NAME;
 
-    logger.deleteFile()
-  }
+		if (this.scopeFlags.output.split(path.sep).length === 1) {
+			this.scopeFlags.output = path.join(this.projectConfig.manifest.mergedPath, this.scopeFlags.output);
+		}
+
+		if (!this.scopeFlags.output.endsWith('.xml')) this.scopeFlags.output += '.xml';
+
+		if (fs.existsSync(this.scopeFlags.output)) {
+			logger.log({ message: `Output path "${this.scopeFlags.output}" already exist`, type: 'INFO' });
+
+			replaceFile = this.scopeFlags.force || (await prompt.input.confirm(`Replace file at ${this.scopeFlags.output}`));
+
+			logger.log({ message: `Output path "${this.scopeFlags.output}" will be replaced`, type: 'INFO' });
+		}
+
+		return replaceFile;
+	}
+
+	private logResult() {
+		logger.log({ message: `New manifest file info:`, prompt: true, type: 'INFO' });
+		logger.log({
+			message: table([
+				['Manifest file saved at', path.join(process.cwd(), this.scopeFlags.output)],
+				['Merged files', this.scopeFlags.files.join('\n')],
+			]),
+			prompt: true,
+			type: 'INFO',
+		});
+
+		const tableData = [];
+		for (const typeName of this.finalPackage.membersNames) {
+			const memberItens = [...(this.finalPackage.members.get(typeName) ?? [])];
+
+			tableData.push([`${typeName} (${memberItens.length})`, memberItens.join('\n')]);
+		}
+
+		logger.log({ message: table(tableData), prompt: true, type: 'INFO' });
+	}
 }

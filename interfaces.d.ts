@@ -4,7 +4,7 @@ export namespace ProjectConfigOptions {
 	export type ProjectConfing = {
 		logs: {
 			path: string;
-			save?: boolean;
+			save: boolean;
 		};
 		manifest: {
 			mergedPath: string;
@@ -15,12 +15,26 @@ export namespace ProjectConfigOptions {
 			path: string;
 			timestamp: boolean;
 		};
+		salesforceApi: string;
 	};
 }
 
 export namespace NumbersTypes {
 	export type IntRange<F extends number, T extends number> = Exclude<EnumNumberRange<T>, EnumNumberRange<F>>;
 }
+
+export type SfdxProjectJson = {
+	name: string;
+	namespace: string;
+	packageDirectories: [
+		{
+			default: boolean;
+			path: 'force-app';
+		},
+	];
+	sfdcLoginUrl: string;
+	sourceApiVersion: '58.0' | string;
+};
 
 export namespace Logger {
 	export type ErrorType = 'ERROR' | 'EXCEPTION';
