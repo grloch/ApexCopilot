@@ -1,11 +1,15 @@
-import * as input from './input'
-import inquirePath from './inquirePath'
-import selectManifestFiles from './selectFiles'
+import * as input from './input';
+import inquirePath from './inquirePath';
+import selectFiles from './select-files';
 
-export default {
-  input,
-  path: {
-    inquirePath,
-    selectManifestFiles,
-  },
-}
+const exportObject: any = {
+	files: {
+		selectFiles,
+	},
+	input,
+	path: {
+		inquirePath,
+	},
+};
+
+export default exportObject;
