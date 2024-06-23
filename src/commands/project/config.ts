@@ -115,11 +115,11 @@ export default class projectConfig extends Command {
 	}
 
 	private applyProjectDefaults() {
-		// @ts-expect-error: lalalal
+		// @ts-expect-error: it`s ok
 		this.projectNewConfig.manifest.path = this.scopeFlags.manifest;
-		// @ts-expect-error: lalalal
+		// @ts-expect-error: it`s ok
 		this.projectNewConfig.manifest.mergedPath = this.scopeFlags.merged;
-		// @ts-expect-error: lalalal
+		// @ts-expect-error: it`s ok
 		this.projectNewConfig.package.path = this.scopeFlags.package;
 		this.projectNewConfig.logs.path = this.scopeFlags.log ?? cliDefaultConfigs.LOGS_DEFAULT_DIR;
 	}

@@ -133,7 +133,9 @@ export default class Merge extends Command {
 		logger.log({ message: `New manifest file info:`, prompt: true, type: 'INFO' });
 		logger.log({
 			message: table([
+				// @ts-expect-error: its`n not undefined
 				['Manifest file saved at', path.join(process.cwd(), this.scopeFlags.output)],
+				// @ts-expect-error: its`n not undefined
 				['Merged files', this.scopeFlags.files.join('\n')],
 			]),
 			prompt: true,
