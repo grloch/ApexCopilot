@@ -1,10 +1,9 @@
-import {Args, CommandHelp} from '@oclif/core'
+import { Args, CommandHelp } from '@oclif/core';
 
 export default class GlobalIndex extends CommandHelp {
-  static args = {
-    commands: Args.string({description: 'Command to show help for.', required: false}),
-  }
+	static args = {
+		commands: Args.string({ description: 'Command to show help for.', required: false }),
+	};
 
-  static description = 'Genereal CLI configs'
+	static description = 'Genereal CLI configs';
 }
-

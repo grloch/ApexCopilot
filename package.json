@@ -31,6 +31,7 @@
 		"prepack": "npm run build && oclif manifest && oclif readme",
 		"postpack": "shx rm -f oclif.manifest.json",
 		"prepare": "npm run build",
+		"prettier": "prettier --write \"src/**/*\"",
 		"test": "mocha --forbid-only \"test/**/*.test.ts\"",
 		"posttest": "npm run lint",
 		"version": "oclif readme && git add README.md"
@@ -89,6 +90,7 @@
 		"fs-extra": "^11.2.0",
 		"mocha": "^10",
 		"oclif": "^4",
+		"prettier": "^3.3.2",
 		"shx": "^0.3.3",
 		"strip-color": "^0.1.0",
 		"ts-node": "^10.9.2",

@@ -1,1 +1,1 @@
-export const cliLogs = './logs'
+export const cliLogs = './logs';

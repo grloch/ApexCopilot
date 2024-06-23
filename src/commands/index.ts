@@ -1,8 +1,7 @@
-export {run} from '@oclif/core'
-
+export { run } from '@oclif/core';
 
 //  !Commands Roadmap
-//  * Project 
+//  * Project
 //  * * Orgs
 //  * * * Add
 //  * * * Remove
@@ -10,7 +9,6 @@ export {run} from '@oclif/core'
 //  * Package
 //  * * New
 //  * * Update/increment with git changes
-//  * * Merge Packages
 //  * * Retrieve
 //  * * Deploy
 
@@ -19,5 +17,3 @@ export {run} from '@oclif/core'
 
 //  * Interface
 //  * * Project interface
-
-
