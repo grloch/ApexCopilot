@@ -1,4 +1,4 @@
-import * as inquirer from '@inquirer/prompts'
+import select from '@inquirer/select'
 
 export async function confirm(message: string, options?: {labels?: {cancel?: string; confirm?: string}}) {
   options = options ?? {labels: {}}
@@ -9,7 +9,7 @@ export async function confirm(message: string, options?: {labels?: {cancel?: str
   labels.confirm = labels.confirm ?? 'Confirm'
   labels.cancel = labels.cancel ?? 'Cancel'
 
-  return inquirer.select({
+  return select({
     choices: [
       {name: labels.confirm, value: true},
       {name: labels.cancel, value: false},
