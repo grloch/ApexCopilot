@@ -41,31 +41,3 @@ export default async function inquirePath(options: InquirePathOptions) {
 
   return inquireResponse
 }
-
-// type selectFileOrDirPath_selectFileOptions = {
-//
-//   filter?: Set<string>
-//   minimunSelection?: number
-//   multiple?: boolean
-//   rootPath: string
-//   type: 'dir' | 'file'
-// }
-
-//   message: options.message,
-//   //     multiple: options.multiple,
-//       name: 'resp',
-//   //     root: options.rootPath,
-//   //     // @ts-expect-error Valid type created by importing "inquirer-file-tree-selection-prompt"
-//   //     type: 'fileTreeSelection',
-//   //     // validate,
-// })
-
-// response = resp
-// // } while (
-// //   avaliableTrys > 0 &&
-// //   (!response || (options.multiple && (!Array.isArray(response) || (options.minimunSelection && response.length < options.minimunSelection))))
-// // )
-
-// // // logger.methodResponse({context: LOG_CONTEXT, methodName: 'selectFileOrDirPath', methodResponse: response})
-
-// return response
