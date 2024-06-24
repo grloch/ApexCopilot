@@ -50,7 +50,19 @@
 			"global": {
 				"description": "PKG JSON TOPIC DESC"
 			},
+			"package": {
+				"description": "Package options"
+			},
+			"package:merge": {
+				"description": "Merge two or more xml manifest files into one"
+			},
 			"project": {
+				"description": "Configure options for local project"
+			},
+			"project:org": {
+				"description": "Add, remove and list current project orgs"
+			},
+			"project:org:add": {
 				"description": "PKG JSON TOPIC DESC"
 			}
 		}
