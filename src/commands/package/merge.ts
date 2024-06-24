@@ -19,15 +19,15 @@ type MergeScopeFlags = {
 const DEFAULT_OUTPUT_NAME = 'mergedPackage';
 
 export default class Merge extends Command {
-	static override description = 'describe the command here';
+	static override description = 'Merge two or more xml manifest files into one';
 
-	static override examples = ['<%= config.bin %> <%= command.id %>'];
+	static override examples = ['<%= config.bin %> <%= command.id %>', 'apexCopilot package merge'];
 
 	static override flags = {
-		files: Flags.string({ char: 'f', description: 'name to print', multiple: true }),
-		force: Flags.boolean({ default: false }),
-		keepLog: Flags.boolean({ aliases: ['keep-log'], allowNo: false, description: '' }),
-		output: Flags.string({ char: 'o', default: DEFAULT_OUTPUT_NAME }),
+		files: Flags.string({ char: 'f', description: 'Files to merge (minimum two files)', multiple: true }),
+		force: Flags.boolean({ default: false, description: 'Force process, won`t print any prompt' }),
+		keepLog: Flags.boolean({ aliases: ['keep-log'], allowNo: false, description: 'Will prevent CLI to delete log in case of success' }),
+		output: Flags.string({ char: 'o', default: DEFAULT_OUTPUT_NAME, description: `Output filename, allow add path` }),
 	};
 
 	private finalPackage = new PackageController();
