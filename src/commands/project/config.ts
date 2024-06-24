@@ -17,7 +17,7 @@ type CommandScopeFlags = {
 	packageTimeStamp?: boolean;
 };
 
-export default class projectConfig extends Command {
+export default class ProjectConfig extends Command {
 	static description = 'Config local project, must has a ./.git directory';
 
 	static flags = {

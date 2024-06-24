@@ -12,8 +12,9 @@ import prompt from '../../helpers/prompt';
 type MergeScopeFlags = {
 	files?: string[];
 	force?: boolean;
-	keepLog?: boolean;
+	'keep-log'?: boolean;
 	output?: string;
+	'remove-on-finishe'?: boolean;
 };
 
 const DEFAULT_OUTPUT_NAME = 'mergedPackage';
@@ -26,8 +27,9 @@ export default class Merge extends Command {
 	static override flags = {
 		files: Flags.string({ char: 'f', description: 'Files to merge (minimum two files)', multiple: true }),
 		force: Flags.boolean({ default: false, description: 'Force process, won`t print any prompt' }),
-		keepLog: Flags.boolean({ aliases: ['keep-log'], allowNo: false, description: 'Will prevent CLI to delete log in case of success' }),
+		'keep-log': Flags.boolean({ allowNo: false, description: 'Will prevent CLI to delete log in case of success' }),
 		output: Flags.string({ char: 'o', default: DEFAULT_OUTPUT_NAME, description: `Output filename, allow add path` }),
+		'remove-on-finishe': Flags.boolean({ allowNo: false, description: 'Delete input files after create output manifes file', hidden: true }), // TODO
 	};
 
 	private finalPackage = new PackageController();
@@ -74,7 +76,7 @@ export default class Merge extends Command {
 			fs.writeFileSync(this.scopeFlags.output, outputXmlFile);
 		}
 
-		if (!this.scopeFlags.keepLog) logger.deleteFile();
+		if (!this.scopeFlags['keep-log']) logger.deleteFile();
 	}
 
 	private async handleFlags(flags: any) {

@@ -63,7 +63,7 @@ export class LogController {
 		this.log({ message, prompt: true, terminalStart, throwError, type });
 	}
 
-	public log(options: Logger.LogOptions & { terminalStart?: string; type: Logger.LogType }) {
+	public log(options: { terminalStart?: string; type: Logger.LogType } & Logger.LogOptions) {
 		let { context } = options;
 
 		const { message, prompt, terminalStart, throwError } = options;
@@ -145,7 +145,7 @@ export class LogController {
 		}
 	}
 
-	public warn(options: Logger.LogOptions & { throwError?: boolean }, textStart: string = 'WARNING:') {
+	public warn(options: { throwError?: boolean } & Logger.LogOptions, textStart: string = 'WARNING:') {
 		this.log({ ...options, terminalStart: ux.colorize(this._commandContext?.config.theme?.warning, textStart + ':'), type: 'WARNING' });
 	}
 
