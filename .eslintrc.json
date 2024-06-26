@@ -1,7 +1,8 @@
 {
 	"rules": {
 		"@typescript-eslint/no-explicit-any": ["off"],
-		"complexity": ["error", 30]
+		"complexity": ["error", 30],
+		"no-warning-comments": "off"
 	},
 	"extends": ["oclif", "oclif-typescript", "prettier"]
 }
