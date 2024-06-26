@@ -9,9 +9,11 @@
 		"allowJs": true,
 		"noImplicitAny": true,
 		"esModuleInterop": true,
+		"strictNullChecks": false,
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
+		"strictPropertyInitialization": false,
 		"lib": ["es6"],
 		"typeRoots": ["./node_modules/@types", "./interfaces.d.ts"]
 	},
