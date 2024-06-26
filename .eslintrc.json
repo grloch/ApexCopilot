@@ -1,6 +1,6 @@
 {
 	"rules": {
-		"@typescript-eslint/no-explicit-any": ["off"],
+		"@typescript-eslint/no-explicit-any": "off",
 		"complexity": ["error", 30],
 		"no-warning-comments": "off"
 	},
