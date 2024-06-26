@@ -1,3 +1,6 @@
+// TODO Create global config
+// TODO Check global config first before load
+
 import { Command, Flags } from '@oclif/core';
 import Fs from 'fs-extra';
 import Path from 'node:path';
