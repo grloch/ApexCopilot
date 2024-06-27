@@ -5,6 +5,10 @@
 			"label": "Create oclif command",
 			"type": "shell",
 			"command": "oclif generate command ${input:oclifCommandId}"
+		},{
+			"label": "execute prebuild test",
+			"type": "shell",
+			"command": "./bin/test.cmd"
 		}
 	],
 	"inputs": [
