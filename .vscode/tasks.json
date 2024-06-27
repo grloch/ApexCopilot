@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Create oclif command",
+			"type": "shell",
+			"command": "oclif generate command ${input:oclifCommandId}"
+		}
+	],
+	"inputs": [
+		{
+			"id": "oclifCommandId",
+			"description": "oclif ommand id",
+			"type": "promptString"
+		}
+	]
+}
