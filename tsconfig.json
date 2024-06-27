@@ -17,5 +17,7 @@
 		"lib": ["es6"],
 		"typeRoots": ["./node_modules/@types", "./interfaces.d.ts"]
 	},
-	"include": ["./types/**/*.ts", "src/**/*", "..ignore/inquirer", "interfaces.d.ts"]
+	"include": ["./types/**/*.ts", "src/**/*", "..ignore/inquirer", "interfaces.d.ts"],
+	"plugins": [{ "transform": "@salesforce/core/lib/messageTransformer", "import": "messageTransformer" }]
+
 }
