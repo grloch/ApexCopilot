@@ -19,3 +19,5 @@ oclif.lock
 oclif.manifest.json
 sf-test-project/*
 test.cmd
+test/commands/testing.test.ts
+src/commands/testing.ts
