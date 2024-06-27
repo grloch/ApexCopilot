@@ -10,6 +10,7 @@ export const MANIFETS_DEFAULT_DIR = './manifest';
 export const MERGED_MANIFETS_DEFAULT_DIR = './manifest/merged';
 export const PACKAGES_DEFAULT_DIR = './package';
 
+export const ORG_CONFIG_FILE_NAME = '.apex-copilot-orgs.json';
 export const CONFIG_FILE_NAME = './.apex-copilot.json';
 export const SALESFORCE_CONFIG_PATH = './sfdx-project.json';
 export const SALESFORCE_API_VERSION = '58.0';

@@ -38,19 +38,20 @@ export class LogController {
 		return new LoggerContext(this, filePath, functionName);
 	}
 
-	public deleteFile() {
+	public deleteFile(prompt: boolean = true) {
 		this.allowSave = false;
 
 		if (this.fileCreated && Fs.existsSync(this.path) && !IS_DEBUGGIN) {
 			try {
 				Fs.unlinkSync(this.path);
-				this.log({
-					message: `${this.path} deleted!\n`,
-					prompt: true,
-					type: 'INFO',
-				});
+
+				if (prompt) {
+					console.log(`\nFile at ${this.path} deleted!`);
+				}
 			} catch (error) {
-				this.error('Cant`t delete log at ' + this.path + '\n' + error);
+				if (prompt) {
+					console.log('Cant`t delete log at ' + this.path + '\n' + error);
+				}
 			}
 		}
 	}
@@ -109,14 +110,10 @@ export class LogController {
 	}
 
 	public setAllowSave(allowSave: boolean | undefined) {
-		if (allowSave === true || allowSave === false) {
-			if (this.allowSave === undefined) {
-				this.allowSave = allowSave;
-			} else {
-				this.error('Log saving config alread setted', 'ERROR');
-			}
-		} else {
-			this.error('Inform a valid value');
+		if ((allowSave === true || allowSave === false) && this.allowSave !== allowSave && this.allowSave !== true) {
+			this.log({ message: 'Log saving changed to: ' + this.allowSave, prompt: false, type: 'LOG' });
+
+			this.allowSave = allowSave;
 		}
 	}
 
@@ -135,7 +132,7 @@ export class LogController {
 		if (allowSave !== undefined) this.setAllowSave(allowSave);
 	}
 
-	public setOclifContext(oclif: Command) {
+	public setOclifContext(oclif: any) {
 		if (this._commandContext !== undefined) {
 			this.error(`LogController.setOclifContext: oclif context already defined (${this._commandContext})`);
 		} else if (oclif === null) {

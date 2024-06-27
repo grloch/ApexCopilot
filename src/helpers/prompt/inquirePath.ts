@@ -2,6 +2,7 @@ import * as inquirer from '@inquirer/prompts';
 
 import { NumbersTypes } from '../../../interfaces';
 import defaultLogger from '../logger';
+import path from 'node:path';
 
 type InquirePathOptions = {
 	default?: string;
@@ -36,6 +37,10 @@ export default async function inquirePath(options: InquirePathOptions) {
 			logger.error(`No valid response was given`, 'EXCEPTION');
 		}
 	} while (avaliableTrys && !inquireResponse);
+
+	if (!inquireResponse.startsWith(`./`) && !inquireResponse.startsWith(path.sep)) {
+		inquireResponse = `./${inquireResponse}`;
+	}
 
 	logger.methodResponse(inquireResponse, true, options.message);
 

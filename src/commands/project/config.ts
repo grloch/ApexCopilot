@@ -1,134 +1,257 @@
-// TODO Create global config
-// TODO Check global config first before load
-
-import { Command, Flags } from '@oclif/core';
+import { Flags } from '@oclif/core';
 import Fs from 'fs-extra';
 import Path from 'node:path';
 
+import CliBase from '../../helpers/cli-base-classe';
 import * as cliDefaultConfigs from '../../helpers/cli-config';
-import logger from '../../helpers/logger';
-import { printJson, printTitle } from '../../helpers/print';
-import prompt from '../../helpers/prompt';
 
-type CommandScopeFlags = {
-	force?: boolean;
-	keepLog?: boolean;
-	log?: string;
-	manifest?: string;
-	merged?: string;
-	package?: string;
-	packageTimeStamp?: boolean;
-};
+const DEFAULT_LOG_PATH = './logs';
+const DEFAULT_MANIFEST_PATH = './manifest';
+const DEFAULT_MERGED_PATH = './manifest/merged';
+const DEFAULT_PACKAGE_PATH = './package';
 
-export default class ProjectConfig extends Command {
-	static description = 'Config local project, must has a ./.git directory';
+const AUTOGENERATE_DESCRIPTION = `Generate default project config. Flags informed won't be overwrite, define:
+--force=true
+--ignore-missing-paths=true
+--keep-log=true
+--logs-path="${DEFAULT_LOG_PATH}"
+--manifest-path="${DEFAULT_MANIFEST_PATH}"
+--merged-path="${DEFAULT_MERGED_PATH}"
+--overwrite-files=true
+--package-path="${DEFAULT_PACKAGE_PATH}"
+--quiet-mode=false
+--retrieve-use-full-path=false
+--use-package-timestamp=false`;
 
-	static flags = {
-		force: Flags.boolean({
-			char: 'f',
-			default: false,
-			description: 'Ignores configuration wizard and generates a new local configuration file',
-		}),
-		fullManifest: Flags.boolean({ aliases: ['use-full-manifest-on-retrieve'], allowNo: false }),
-		'ignore-missing-paths': Flags.boolean({ char: 'i', default: false, description: "Won't check if current dir has required paths" }),
-		keepLog: Flags.boolean({ aliases: ['keep-log'], allowNo: false, description: '' }),
-		log: Flags.string({ alias: 'log-dir', char: 'l', description: 'Logs dir path' }),
-		manifest: Flags.string({ alias: 'manifest-dir', char: 'm', description: 'Manifest dir path' }),
-		merged: Flags.string({ aliases: ['merged-manifest-dir'], description: 'Destination where will be created all merged manifest files' }),
-		package: Flags.string({ alias: 'packages-dir', char: 'p', description: 'Packages dir path' }),
-		packageTimeStamp: Flags.boolean({ aliases: ['package-timestamp'], allowNo: false, description: 'Use timestamp as aditional subfolder on retrieve (default false)' }),
-	};
+class CommandScopeFlags {
+	public autoGenerate: boolean = false;
+	public force: boolean = false;
+	public ignoreMissingPaths: boolean;
+	public keepLog: boolean = false;
+	public logsPath: string;
+	public manifestPath: string;
+	public mergedPath: string;
+	public overwriteFiles: boolean = false;
+	public packagePath: string;
+	public quietMode: boolean = false;
+	public retrieveUseFullpath: boolean = false;
+	public usePackageTimeStamp: boolean = false;
 
-	private projectNewConfig = cliDefaultConfigs.blankConfig;
-	private scopeFlags: CommandScopeFlags = {};
+	constructor(flags: any) {
+		this.force = flags.force;
+		this.autoGenerate = flags['auto-generate'];
+		this.quietMode = flags['quiet-mode'];
+		this.keepLog = flags['keep-log'];
+		this.ignoreMissingPaths = flags['ignore-missing-paths'];
 
-	async applyFlags(flags: any) {
-		const pathFlags = ['manifest', 'package', 'log', 'merged'];
-		for (const flagName of pathFlags) {
-			if (flags[flagName] && !flags[flagName].startsWith(`./`)) flags[flagName] = `./${flags[flagName]}`;
+		this.overwriteFiles = flags['overwrite-files'];
+		this.retrieveUseFullpath = flags['retrieve-use-full-path'];
+		this.usePackageTimeStamp = flags['use-package-timestamp'];
+
+		this.checkPathVar('logsPath', DEFAULT_LOG_PATH, flags['logs-path']);
+		this.checkPathVar('packagePath', DEFAULT_LOG_PATH, flags['package-path']);
+		this.checkPathVar('manifestPath', DEFAULT_LOG_PATH, flags['manifest-path']);
+		this.checkPathVar('mergedPath', DEFAULT_LOG_PATH, flags['merged-path']);
+
+		if (this.quietMode) {
+			this.force = true;
+			if (this.ignoreMissingPaths === undefined) this.ignoreMissingPaths = true;
 		}
 
-		this.scopeFlags = flags;
+		if (this.autoGenerate) {
+			this.force = true;
+			this.ignoreMissingPaths = true;
+			this.quietMode = true;
+
+			this.keepLog = true;
+			this.retrieveUseFullpath = false;
+			this.usePackageTimeStamp = false;
+			this.overwriteFiles = true;
+
+			this.logsPath = DEFAULT_LOG_PATH;
+			this.packagePath = DEFAULT_PACKAGE_PATH;
+			this.manifestPath = DEFAULT_MANIFEST_PATH;
+			this.mergedPath = DEFAULT_MERGED_PATH;
+			this.usePackageTimeStamp = false;
+		}
+	}
+
+	private checkPathVar(varName: 'logsPath' | 'manifestPath' | 'mergedPath' | 'packagePath', defaultValue: string, flagValue?: string) {
+		if (flagValue !== undefined && flagValue !== null) {
+			this[varName] = flagValue.trim();
+		}
+
+		if (this[varName] === null || this[varName] === undefined || this[varName].length === 0) {
+			this[varName] = defaultValue;
+		}
+
+		if (!this[varName].startsWith(`./`)) {
+			this[varName] = `./${this[varName]}`;
+		}
+	}
+}
+
+const orgconfigFileModel = {
+	production: null as string,
+	homologation: null as string,
+	testing: null as string,
+	development: null as string,
+	others: null as string,
+};
+
+const requiredPaths = ['.git', 'sfdx-project.json', Path.join('force-app', 'main', 'default')];
+
+export default class ProjectConfig extends CliBase {
+	static description = 'Config local project, must has a ./.git directory';
+
+	static override examples = ['<%= config.bin %> <%= command.id %>'];
+
+	static flags = {
+		'auto-generate': Flags.boolean({ default: false, description: AUTOGENERATE_DESCRIPTION }),
+		force: Flags.boolean({ char: 'f', default: false, description: 'Ignores configuration wizard and execute command' }),
+		'ignore-missing-paths': Flags.boolean({ allowNo: true, default: false, description: `Won't check if current dir has required paths:\n${requiredPaths.join('\n')}` }),
+		'keep-log': Flags.boolean({ allowNo: false, default: false, description: 'Keep config log after execution even if it was successfull' }),
+		'logs-path': Flags.string({ char: 'l', default: DEFAULT_LOG_PATH, description: 'Logs dir path on project' }),
+		'manifest-path': Flags.string({ char: 'm', default: DEFAULT_MANIFEST_PATH, description: 'Manifest dir path on project' }),
+		'merged-path': Flags.string({ default: DEFAULT_MERGED_PATH, description: 'Destination where all merged manifest files will be created' }),
+		'overwrite-files': Flags.boolean({ allowNo: false, default: false, description: 'Overwrite existing files' }),
+		'package-path': Flags.string({ char: 'p', default: DEFAULT_PACKAGE_PATH, description: 'Packages dir path on project' }),
+		'quiet-mode': Flags.boolean({ default: false, description: 'Execute in quiet mode, implies: --force=true, --ignore-missing-paths=true. will overwrite all files' }),
+		'retrieve-use-full-path': Flags.boolean({ default: false, description: 'Set project to use full manifest path on retreving' }),
+		'use-package-timestamp': Flags.boolean({ default: false, description: 'Use timestamp as aditional subfolder on retrieve' }),
+	};
+
+	contextName = 'config-project';
+
+	declare parsedFlags: CommandScopeFlags;
+
+	private projectNewConfig = cliDefaultConfigs.blankConfig;
+
+	async parseFlags() {
+		const { flags } = await this.parse();
+
+		this.parsedFlags = new CommandScopeFlags(flags);
 	}
 
 	async run(): Promise<void> {
-		const { flags } = await this.parse();
-		this.applyFlags(flags);
+		this.logger.setAllowSave(true);
+		await super.run();
 
-		const correntConfig = cliDefaultConfigs.getConfig();
+		if (this.parsedFlags.autoGenerate) {
+			this.printTitle('Auto Generate');
+			this.log('Generating default config', true);
 
-		logger.setOclifContext(this);
-		logger.setFilename('config-project', correntConfig.logs?.save);
-		logger.logVariable('flags', flags);
+			this.log('--force = ' + this.parsedFlags.force, true);
+			this.log('--ignore-missing-paths = ' + this.parsedFlags.ignoreMissingPaths, true);
+			this.log('--logs-path = ' + this.parsedFlags.logsPath, true);
+			this.log('--manifest-path = ' + this.parsedFlags.manifestPath, true);
+			this.log('--merged-path = ' + this.parsedFlags.mergedPath, true);
+			this.log('--overwrite-files = ' + this.parsedFlags.overwriteFiles, true);
+			this.log('--package-path = ' + this.parsedFlags.packagePath, true);
+			this.log('--quiet-mode = ' + this.parsedFlags.quietMode, true);
+			this.log('--retrieve-use-full-path = ' + this.parsedFlags.retrieveUseFullpath, true);
+			this.log('--use-package-timestamp = ' + this.parsedFlags.usePackageTimeStamp, true);
+		}
 
-		let blockOverwrite = false;
-		if (Fs.existsSync(cliDefaultConfigs.CONFIG_FILE_NAME)) {
-			!flags.force && printTitle('Confirm overwrite');
+		this.printTitle('Check overwriting files');
 
-			blockOverwrite = flags.force || (await prompt.input.confirm(`${cliDefaultConfigs.CONFIG_FILE_NAME} already exists, overwrite it?`));
+		const overwriteAllExistingFiles =
+			this.parsedFlags.ignoreMissingPaths || (await this.checkOverwriteFiles([cliDefaultConfigs.CONFIG_FILE_NAME, cliDefaultConfigs.ORG_CONFIG_FILE_NAME]));
+		if (!overwriteAllExistingFiles) this.exitMessage('Operation cancelled by user', true, 'INFO', 0);
 
-			if (!blockOverwrite) {
-				return logger.log({ message: 'Operation cancelled by user', prompt: true, type: 'INFO' });
+		for (const i of [cliDefaultConfigs.CONFIG_FILE_NAME, cliDefaultConfigs.ORG_CONFIG_FILE_NAME]) {
+			if (Fs.existsSync(i)) {
+				this.logger.log({ message: `"${Path.join(process.cwd(), i)}" will be overwriten`, prompt: false, type: 'INFO' });
 			}
 		}
 
-		if (!flags['ignore-missing-paths']) {
-			const missingPaths = this.getMissingProjectPaths();
+		if (!this.parsedFlags.ignoreMissingPaths) {
+			const missingPaths = this.getMissingProjectRequiredPaths();
 
 			if (missingPaths.length > 0) {
-				const message: string = 'Missing Salesforce project paths not founded: \n - ' + missingPaths.join(`\n - `);
-				this.error(message, { message });
+				this.exitMessage('Missing Salesforce project paths not founded: \n - ' + missingPaths.join(`\n - `), true, 'INFO', 1);
 			}
 		}
 
-		this.applyProjectDefaults();
+		this.projectNewConfig.logs.path = this.parsedFlags.logsPath;
+		this.projectNewConfig.manifest.path = this.parsedFlags.manifestPath;
+		this.projectNewConfig.manifest.mergedPath = this.parsedFlags.mergedPath;
+		this.projectNewConfig.package.path = this.parsedFlags.packagePath;
 
-		this.setupManifestOptions();
+		this.projectNewConfig.package.fullManifestPath = this.parsedFlags.retrieveUseFullpath;
+		this.projectNewConfig.package.timestamp = this.parsedFlags.usePackageTimeStamp;
 
-		this.setupPackageOptions();
+		if (!this.parsedFlags.force) {
+			if (this.parsedFlags.logsPath === DEFAULT_LOG_PATH) {
+				this.printTitle('Logs');
+				this.projectNewConfig.logs.path = await this.prompt.path.inquirePath({ default: this.parsedFlags.logsPath, message: 'Set log dir', type: 'dir' });
+			}
 
-		this.setupLogsOptions();
+			if (!this.parsedFlags.force) {
+				this.printTitle('Logs');
+				this.projectNewConfig.logs.save = await this.prompt.input.confirm('Save successfull logs?', { labels: { cancel: 'No', confirm: 'Yes' } });
+			}
 
-		!flags.force && printTitle('Confirm creation');
+			if (this.parsedFlags.manifestPath === DEFAULT_MANIFEST_PATH) {
+				this.printTitle('Manifest');
 
-		const confirmCreation = flags.force || (await prompt.input.confirm(`Confirm creation?`));
+				this.projectNewConfig.manifest.path = await this.prompt.path.inquirePath({ default: this.parsedFlags.manifestPath, message: 'Set manifest dir', type: 'dir' });
+			}
 
-		console.log('New project config:');
-		printJson(this.projectNewConfig);
+			if (this.parsedFlags.mergedPath === DEFAULT_MERGED_PATH) {
+				this.printTitle('Manifest');
 
-		if (confirmCreation) {
-			const fileName = '.apex-copilot.json';
+				this.projectNewConfig.manifest.mergedPath = await this.prompt.path.inquirePath({ default: this.parsedFlags.mergedPath, message: 'Set merged manifest dir', type: 'dir' });
+			}
+
+			if (this.parsedFlags.packagePath === DEFAULT_PACKAGE_PATH) {
+				this.printTitle('Package');
+
+				this.projectNewConfig.package.path = await this.prompt.path.inquirePath({ default: this.parsedFlags.packagePath, message: 'Set package dir', type: 'dir' });
+			}
+
+			if (!this.parsedFlags.force && !this.projectNewConfig.package.fullManifestPath) {
+				this.printTitle('Package');
+
+				this.projectNewConfig.package.fullManifestPath = await this.prompt.input.confirm('Use full path on retrieve?', { labels: { cancel: 'No', confirm: 'Yes' } });
+			}
+
+			if (!this.parsedFlags.force && !this.projectNewConfig.package.fullManifestPath) {
+				this.printTitle('Package');
+
+				this.projectNewConfig.package.timestamp = await this.prompt.input.confirm('Timestamp packages path on retrieve?', { labels: { cancel: 'No', confirm: 'Yes' } });
+			}
+		}
+
+		this.printTitle('Confirm creation');
+		this.printJson('New project config:', this.projectNewConfig);
+		this.printSpacer();
+
+		this.printJson('New project org options:', orgconfigFileModel);
+		this.printSpacer();
+
+		if (await this.confirmForcedFlag('Confirm creation?')) {
 			try {
-				Fs.writeFileSync(fileName, JSON.stringify(this.projectNewConfig, null, 4));
-
-				logger.warn(
-					{
-						message: `${Path.join(process.cwd(), fileName)}`,
-						prompt: true,
-						type: 'INFO',
-					},
-					'Created config file',
-				);
-
-				!this.scopeFlags.keepLog && logger.deleteFile();
+				this.createJsonFile(Path.join(process.cwd(), cliDefaultConfigs.CONFIG_FILE_NAME), this.projectNewConfig);
 			} catch (error) {
-				logger.error(`Error when creating file ${fileName}: ${error}`, 'EXCEPTION');
+				this.logger.error(`Error when creating file ${cliDefaultConfigs.CONFIG_FILE_NAME}: ${error}`, 'EXCEPTION');
+			}
+
+			try {
+				this.createJsonFile(Path.join(process.cwd(), cliDefaultConfigs.ORG_CONFIG_FILE_NAME), orgconfigFileModel);
+			} catch (error) {
+				this.logger.error(`Error when creating file ${cliDefaultConfigs.ORG_CONFIG_FILE_NAME}: ${error}`, 'EXCEPTION');
+			}
+
+			if (!this.parsedFlags.keepLog) {
+				this.logger.deleteFile(this.allowPrompt);
 			}
 		}
+
+		console.log('Config files created');
 	}
 
-	private applyProjectDefaults() {
-		// @ts-expect-error: it`s ok
-		this.projectNewConfig.manifest.path = this.scopeFlags.manifest;
-		// @ts-expect-error: it`s ok
-		this.projectNewConfig.manifest.mergedPath = this.scopeFlags.merged;
-		// @ts-expect-error: it`s ok
-		this.projectNewConfig.package.path = this.scopeFlags.package;
-		this.projectNewConfig.logs.path = this.scopeFlags.log ?? cliDefaultConfigs.LOGS_DEFAULT_DIR;
-	}
-
-	private getMissingProjectPaths(): Array<string> {
-		const requiredPaths = ['.git', 'sfdx-project.json', Path.join('force-app', 'main', 'default')];
+	private getMissingProjectRequiredPaths(): Array<string> {
 		const missingPaths: Array<string> = [];
 
 		for (const requiredPath of requiredPaths) {
@@ -139,40 +262,7 @@ export default class ProjectConfig extends Command {
 
 		return missingPaths;
 	}
-
-	private async setupLogsOptions() {
-		!this.scopeFlags.force && printTitle('LOGS');
-
-		this.projectNewConfig.logs.save = this.scopeFlags.force ?? (await prompt.input.confirm(`Save logs?`));
-	}
-
-	private async setupManifestOptions() {
-		!this.scopeFlags.force && !this.projectNewConfig.manifest.path && !this.projectNewConfig.manifest.mergedPath && printTitle('Manifest');
-
-		if (!this.projectNewConfig.manifest.path) {
-			this.projectNewConfig.manifest.path = this.scopeFlags.force
-				? cliDefaultConfigs.MANIFETS_DEFAULT_DIR
-				: await prompt.path.inquirePath({ default: cliDefaultConfigs.MANIFETS_DEFAULT_DIR, maximumTrys: 3, message: 'Manifestos directory path', type: 'dir' });
-		}
-
-		if (!this.projectNewConfig.manifest.mergedPath) {
-			this.projectNewConfig.manifest.mergedPath = this.scopeFlags.force
-				? cliDefaultConfigs.MERGED_MANIFETS_DEFAULT_DIR
-				: await prompt.path.inquirePath({ default: cliDefaultConfigs.MERGED_MANIFETS_DEFAULT_DIR, maximumTrys: 3, message: 'Merged manifestos directory path', type: 'dir' });
-		}
-	}
-
-	private async setupPackageOptions() {
-		!this.scopeFlags.force && !this.projectNewConfig.package.path && printTitle('Package');
-
-		if (!this.projectNewConfig.package.path) {
-			this.projectNewConfig.package.path = this.scopeFlags.force
-				? cliDefaultConfigs.PACKAGES_DEFAULT_DIR
-				: await prompt.path.inquirePath({ default: cliDefaultConfigs.PACKAGES_DEFAULT_DIR, maximumTrys: 3, message: 'Packages manifestos directory path', type: 'dir' });
-		}
-
-		this.projectNewConfig.package.fullManifestPath = this.scopeFlags.force ?? (await prompt.input.confirm(`Use full path on retrieve?`));
-		this.projectNewConfig.package.timestamp =
-			this.scopeFlags.packageTimeStamp || this.scopeFlags.force ? false : await prompt.input.confirm(`Timestamp packages path on retrieve?`);
-	}
 }
+
+// TODO Create global config
+// TODO Check global config first before load
