@@ -2,6 +2,7 @@
 	"compilerOptions": {
 		"declaration": true,
 		"module": "commonjs",
+		"composite": true,
 		"outDir": "dist",
 		"rootDir": "src",
 		"strict": true,
@@ -19,5 +20,4 @@
 	},
 	"include": ["./types/**/*.ts", "src/**/*", "..ignore/inquirer", "interfaces.d.ts"],
 	"plugins": [{ "transform": "@salesforce/core/lib/messageTransformer", "import": "messageTransformer" }]
-
 }
