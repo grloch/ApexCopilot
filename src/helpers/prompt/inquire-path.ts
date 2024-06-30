@@ -1,8 +1,8 @@
 import * as inquirer from '@inquirer/prompts';
+import path from 'node:path';
 
 import { NumbersTypes } from '../../../interfaces';
 import defaultLogger from '../logger';
-import path from 'node:path';
 
 type InquirePathOptions = {
 	default?: string;

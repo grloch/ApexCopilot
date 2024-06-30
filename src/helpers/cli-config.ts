@@ -73,6 +73,7 @@ export function getConfig(): ProjectConfigOptions.ProjectConfing {
 
 	try {
 		if (Fs.existsSync(CURRENT_SALESFORCE_CONFIG)) {
+			// eslint-disable-next-line unicorn/prefer-module
 			salesforceConfig = require(CURRENT_SALESFORCE_CONFIG);
 
 			conxtetLogger.methodResponse(salesforceConfig, false, `Loaded salesforce config at ${CURRENT_SALESFORCE_CONFIG}`);
@@ -85,6 +86,7 @@ export function getConfig(): ProjectConfigOptions.ProjectConfing {
 
 	try {
 		if (Fs.existsSync(CURRENT_PROJECT_CONFIG)) {
+			// eslint-disable-next-line unicorn/prefer-module
 			configLoaded = require(CURRENT_PROJECT_CONFIG);
 
 			conxtetLogger.methodResponse(configLoaded, true, `Loaded config at ${CURRENT_PROJECT_CONFIG}`);

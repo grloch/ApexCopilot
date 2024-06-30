@@ -1,13 +1,14 @@
-import * as Fs from 'fs';
+import * as Fs from 'node:fs';
 import convert from 'xml-js';
 
+import { ProjectConfigOptions } from '../../interfaces';
 import * as cliDefaultConfigs from '../helpers/cli-config';
 import defaultLogger from './logger';
 import { CaseInsensitiveMap } from './map';
-import { ProjectConfigOptions } from '../../interfaces';
 
 type ManifestPackage = {
 	xml: { attributes: { version: '1.0' } };
+	// eslint-disable-next-line perfectionist/sort-object-types
 	Package: {
 		types: Array<ManifestType>;
 	};
@@ -28,11 +29,13 @@ export class PackageController {
 	public file = {
 		xml: {
 			_attributes: {
+				// eslint-disable-next-line unicorn/text-encoding-identifier-case
 				encoding: 'UTF-8',
 				standalone: 'yes',
 				version: '1.0',
 			},
 		},
+		// eslint-disable-next-line perfectionist/sort-objects
 		Package: {
 			types: new Array<{ members: Array<string>; name: string }>(),
 			version: projectConfig.salesforceApi,
@@ -88,6 +91,7 @@ export class PackageController {
 			}
 		}
 
+		// eslint-disable-next-line import/no-named-as-default-member
 		return convert.json2xml(JSON.stringify(this.file), { compact: true, spaces: 4 });
 	}
 
@@ -106,6 +110,7 @@ export class PackageController {
 			};
 
 			try {
+				// eslint-disable-next-line import/no-named-as-default-member
 				rawFile = JSON.parse(convert.xml2json(Fs.readFileSync(file, 'utf8'), { compact: true, spaces: 4 }));
 			} catch (error) {
 				return defaultLogger.error(`Error parsing file "${file}": ${error}`, 'EXCEPTION');
@@ -135,6 +140,7 @@ export class PackageController {
 export function xml2json(filePath: string) {
 	const packageFile = new PackageController();
 
+	// eslint-disable-next-line import/no-named-as-default-member
 	const result = JSON.parse(convert.xml2json(Fs.readFileSync(filePath, 'utf8'), { compact: true, spaces: 4 }));
 
 	if (!Array.isArray(result.Package?.types)) result.Package.types = [result.Package?.types];

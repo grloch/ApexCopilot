@@ -3,9 +3,9 @@ export { run } from '@oclif/core';
 import { CommandHelp } from '@oclif/core';
 
 export default class HelpCommand extends CommandHelp {
-	async run() {
-		this._help();
-	}
+	// async run() {
+	// 	this._help();
+	// }
 }
 
 //  !Commands Roadmap

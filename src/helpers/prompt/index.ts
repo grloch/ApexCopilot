@@ -1,5 +1,5 @@
 import * as input from './input';
-import inquirePath from './inquirePath';
+import inquirePath from './inquire-path';
 import selectFiles from './select-files';
 
 const exportObject = {

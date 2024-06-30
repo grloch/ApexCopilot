@@ -95,8 +95,10 @@ class CommandScopeFlags {
 
 const orgconfigFileModel = {
 	production: null as string,
+	// eslint-disable-next-line perfectionist/sort-objects
 	homologation: null as string,
 	testing: null as string,
+	// eslint-disable-next-line perfectionist/sort-objects
 	development: null as string,
 	others: null as string,
 };

@@ -1,4 +1,4 @@
-import { Command, Flags } from '@oclif/core';
+import { Command } from '@oclif/core';
 import Fs from 'fs-extra';
 
 import { Logger, ProjectConfigOptions } from '../../interfaces';
