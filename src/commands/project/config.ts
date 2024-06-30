@@ -136,7 +136,6 @@ export default class ProjectConfig extends CliBase {
 	}
 
 	async run(): Promise<void> {
-		this.logger.setAllowSave(true);
 		await super.run();
 
 		if (this.parsedFlags.autoGenerate) {
