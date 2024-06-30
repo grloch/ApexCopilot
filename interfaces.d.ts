@@ -22,6 +22,12 @@ export namespace ProjectConfigOptions {
 export namespace NumbersTypes {
 	export type IntRange<F extends number, T extends number> = Exclude<EnumNumberRange<T>, EnumNumberRange<F>>;
 }
+export namespace Prompt {
+	export type Choice = {
+		name: string;
+		value: string;
+	};
+}
 
 export type SfdxProjectJson = {
 	name: string;

@@ -2,6 +2,7 @@ import { Command, Flags } from '@oclif/core';
 import Fs from 'fs-extra';
 
 import { Logger, ProjectConfigOptions } from '../../interfaces';
+import * as globalVariables from '../global-variables';
 import * as cliDefaultConfigs from './cli-config';
 import logger from './logger';
 import { printJson, printTitle } from './print';
@@ -9,6 +10,7 @@ import prompt from './prompt';
 
 export default abstract class CliBase extends Command {
 	contextName: string;
+	protected globalVariables = globalVariables;
 	protected logger = logger;
 	parsedFlags: any;
 	protected projectConfig: ProjectConfigOptions.ProjectConfing = cliDefaultConfigs.getConfig();

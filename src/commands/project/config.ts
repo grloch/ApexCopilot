@@ -4,6 +4,8 @@ import Path from 'node:path';
 
 import CliBase from '../../helpers/cli-base-classe';
 import * as cliDefaultConfigs from '../../helpers/cli-config';
+import { select } from '../../helpers/prompt/input';
+import { listDeviceOrgsAsSelectOption, removeOrgItemOption } from '../../helpers/sfdx';
 
 const DEFAULT_LOG_PATH = './logs';
 const DEFAULT_MANIFEST_PATH = './manifest';
@@ -221,6 +223,22 @@ export default class ProjectConfig extends CliBase {
 
 				this.projectNewConfig.package.timestamp = await this.prompt.input.confirm('Timestamp packages path on retrieve?', { labels: { cancel: 'No', confirm: 'Yes' } });
 			}
+
+			this.printTitle('Orgs');
+			const salesforceOrgs = await listDeviceOrgsAsSelectOption();
+			salesforceOrgs.push({ name: 'None', value: null });
+
+			orgconfigFileModel.production = await select('Select production org alias', { choices: salesforceOrgs });
+			if (orgconfigFileModel.production) removeOrgItemOption(salesforceOrgs, orgconfigFileModel.production);
+
+			orgconfigFileModel.homologation = await select('Select homologation org alias', { choices: salesforceOrgs });
+			if (orgconfigFileModel.homologation) removeOrgItemOption(salesforceOrgs, orgconfigFileModel.homologation);
+
+			orgconfigFileModel.testing = await select('Select testing org alias', { choices: salesforceOrgs });
+			if (orgconfigFileModel.testing) removeOrgItemOption(salesforceOrgs, orgconfigFileModel.testing);
+
+			orgconfigFileModel.development = await select('Select development org alias', { choices: salesforceOrgs });
+			if (orgconfigFileModel.development) removeOrgItemOption(salesforceOrgs, orgconfigFileModel.development);
 		}
 
 		this.printTitle('Confirm creation');
