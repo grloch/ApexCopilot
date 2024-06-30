@@ -9,10 +9,8 @@ import { printJson, printTitle } from './print';
 import prompt from './prompt';
 
 export default abstract class CliBase extends Command {
-	contextName: string;
 	protected globalVariables = globalVariables;
 	protected logger = logger;
-	parsedFlags: any;
 	protected projectConfig: ProjectConfigOptions.ProjectConfing = cliDefaultConfigs.getConfig();
 	private printedTitles = new Set<string>();
 
@@ -109,6 +107,8 @@ export default abstract class CliBase extends Command {
 
 		await this.initExecution();
 		await this.parseFlags();
+
+		this.logger.setAllowSave(true);
 	}
 
 	private checkPathVar(varName: string, defaultValue: string, flagValue?: string) {
@@ -141,5 +141,7 @@ export default abstract class CliBase extends Command {
 		this.logger.logVariable('flags', flags);
 	}
 
+	abstract contextName: string;
+	abstract parsedFlags: any;
 	abstract parseFlags(): void;
 }
