@@ -70,7 +70,7 @@ class CommandScopeFlags {
 			this.usePackageTimeStamp = false;
 			this.overwriteFiles = true;
 
-			this.logsPath = DEFAULT_LOG_PATH;
+			this.logsPath = this.logsPath || DEFAULT_LOG_PATH;
 			this.packagePath = DEFAULT_PACKAGE_PATH;
 			this.manifestPath = DEFAULT_MANIFEST_PATH;
 			this.mergedPath = DEFAULT_MERGED_PATH;
