@@ -58,7 +58,6 @@ export const defaultSalesforceConfig: SfdxProjectJson = {
 			path: 'force-app',
 		},
 	],
-	salesforceApi: SALESFORCE_API_VERSION,
 	sfdcLoginUrl: 'https://login.salesforce.com',
 	sourceApiVersion: SALESFORCE_API_VERSION,
 };

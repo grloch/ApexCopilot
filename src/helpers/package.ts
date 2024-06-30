@@ -34,7 +34,7 @@ export class PackageController {
 			},
 		},
 		Package: {
-			types: [],
+			types: new Array<{ members: Array<string>; name: string }>(),
 			version: projectConfig.salesforceApi,
 		},
 	};
@@ -88,7 +88,7 @@ export class PackageController {
 			}
 		}
 
-		return convert.json2xml(this.file, { compact: true, spaces: 4 });
+		return convert.json2xml(JSON.stringify(this.file), { compact: true, spaces: 4 });
 	}
 
 	public concatFile(filePaths: Array<string> | string) {
@@ -116,9 +116,11 @@ export class PackageController {
 			}
 
 			for (const typeItem of rawFile.Package.types) {
+				// @ts-expect-error: it's ok
 				if (!Array.isArray(typeItem.members) || !typeItem.members) typeItem.members = [typeItem.members];
 
 				for (const memberItem of typeItem.members) {
+					// @ts-expect-error: it's ok
 					this.addMemberItem(typeItem.name?._text, memberItem?._text);
 				}
 			}

@@ -2,13 +2,9 @@ import * as salesforce from '@salesforce/core';
 
 import { Prompt } from '../../interfaces';
 
-export interface PromptChoiceArray extends Array<Prompt.Choice> {
-	removeItem(itemvalue: string): void;
-}
-
-export async function listDeviceOrgsAsSelectOption(): Promise<PromptChoiceArray> {
+export async function listDeviceOrgsAsSelectOption(): Promise<Array<Prompt.Choice>> {
 	const salesforceOrgs = (await salesforce.StateAggregator.getInstance()).aliases.getAll();
-	const orgOptions: PromptChoiceArray = [];
+	const orgOptions: Array<Prompt.Choice> = [];
 
 	for (const alias in salesforceOrgs) {
 		orgOptions.push({

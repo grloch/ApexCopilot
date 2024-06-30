@@ -131,11 +131,12 @@ export default async function selectFileOrDirPath(message: string, rootDir: stri
 		validate,
 	};
 
-	const response = minimumSelection > 1 ? await checkbox(promptArgs) : await select(promptArgs);
+	// @ts-expect-error: correct args
+	const response = minimumSelection > 1 ? await checkbox({ ...promptArgs }) : [await select(promptArgs)];
 
 	return response;
 
-	function validate(response) {
+	function validate(response: Array<string>) {
 		let errorMessage = '';
 
 		if (response.length < minimumSelection) {
