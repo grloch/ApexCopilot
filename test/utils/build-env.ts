@@ -14,7 +14,6 @@ export function creatEnv() {
 
 	fs.writeFile(path.join(testProjectPath, 'sfdx-project.json'), sfdxProjectJson);
 
-	process.chdir(testProjectPath);
 }
 
 export function deleteTestOrg() {
