@@ -22,3 +22,5 @@ test.cmd
 test/commands/testing.test.ts
 src/commands/testing.ts
 test-project/*
+coverage/*
+mochawesome-report/*
